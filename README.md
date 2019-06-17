@@ -12,6 +12,28 @@ $ npm run dev // 开发环境
 $ npm run doc // 生成文档   访问链接:http://localhost:3000
 ```
 
+## 目录结构介绍
+
+├── README.md
+├── apidoc.json // apidoc生成接口文档的配置文件
+├── app
+│   ├── control  // 控制器(下面全是写的业务逻辑代码)
+│   │   ├── home.js
+│   │   └── user.js
+│   ├── index.js  // 启动文件
+│   ├── models  // mongoose的model 文件
+│   │   └── user.js
+│   └── router  // 路由文件
+│       ├── index.js
+│       └── v1
+│           ├── home.js
+│           └── user.js
+├── config  // 配置文件
+│   └── index.js
+├── libs
+│   └── db.js // 数据库链接文件
+├── package-lock.json
+└── package.json
 
 ## Licences
 
