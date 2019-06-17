@@ -13,7 +13,7 @@ $ npm run doc // 生成文档   访问链接:http://localhost:3000
 ```
 
 ## 目录结构介绍
-
+```
 ├── README.md
 ├── apidoc.json // apidoc生成接口文档的配置文件
 ├── app
@@ -34,7 +34,7 @@ $ npm run doc // 生成文档   访问链接:http://localhost:3000
 │   └── db.js // 数据库链接文件
 ├── package-lock.json
 └── package.json
-
+```
 ## Licences
 
 >MIT
