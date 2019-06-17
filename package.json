@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon app",
     "pro": "cross-env NODE_ENV=production node app",
-    "doc":"apidoc -i app/control/ -o app/public/apidoc",
+    "doc": "apidoc -i app/control/ -o app/public/apidoc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
