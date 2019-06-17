@@ -1,0 +1,13 @@
+{
+  "name": "test-server", 
+  "version": "1.0.0", 
+  "description": "test项目API文档", 
+  "title": "test-server API", 
+  "url" : "http://0.0.0.0:3000/v1",
+  "forceLanguage":"zh-cn",
+  "template": {
+    "withCompare": true,
+    "withGenerator": true
+  }
+
+}
