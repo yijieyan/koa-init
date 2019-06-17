@@ -4,7 +4,7 @@
 
 ## Description
 
-> 基于koa添加了[koa-bodyparser](https://www.npmjs.com/package/koa-bodyparser) 解析请求参数、[koa-router](https://www.npmjs.com/package/koa-router)作为路由、[koa-parameter](https://www.npmjs.com/package/koa-parameter) 进行参数的校验、[mongoose](https://mongoosejs.com/)作为链接数据库的中间件、[koa-json-error](https://www.npmjs.com/package/koa-json-error)捕获异常、借助apidoc生成接口文档。
+> 基于koa添加了[koa-bodyparser](https://www.npmjs.com/package/koa-bodyparser) 解析请求参数、[koa-router](https://www.npmjs.com/package/koa-router)作为路由、[koa-parameter](https://www.npmjs.com/package/koa-parameter) 进行参数的校验、[mongoose](https://mongoosejs.com/)作为链接数据库的中间件、[koa-json-error](https://www.npmjs.com/package/koa-json-error)捕获异常、借助[apidoc](http://apidocjs.com/)生成接口文档。
 ## Usage
 ```
 $ npm install // 安装依赖
