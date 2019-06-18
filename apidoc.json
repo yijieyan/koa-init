@@ -4,6 +4,7 @@
   "description": "test项目API文档",
   "title": "test-server API",
   "url": "http://localhost:3000/v1",
+  "sampleUrl":"http://localhost:3000/v1",
   "forceLanguage": "zh-cn",
   "template": {
     "withCompare": true,

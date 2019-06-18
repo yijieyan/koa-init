@@ -36,11 +36,12 @@
     "jsonwebtoken": "^8.5.1",
     "koa": "^2.7.0",
     "koa-bodyparser": "^4.2.1",
-    "koa-json-error": "^3.1.2",
-    "koa-jwt": "^3.5.1",
+    "koa-multer": "^1.0.2",
     "koa-parameter": "^3.0.1",
     "koa-router": "^7.4.0",
     "koa-static": "^5.0.0",
+    "log4js": "^4.3.1",
+    "mkdirp": "^0.5.1",
     "mongoose": "^5.6.0"
   }
 }

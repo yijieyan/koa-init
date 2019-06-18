@@ -3,8 +3,8 @@ const {
   secret
 } = require('../config/index');
 class Token {
-  createToken (userId) {
-    let token = jsonwebtoken.sign({
+  async createToken (userId) {
+    let token = await jsonwebtoken.sign({
       userId
     }, secret, {
       expiresIn: '1d'

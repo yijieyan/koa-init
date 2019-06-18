@@ -63,3 +63,5 @@ typings/
 .vscode
 1.txt
 public/
+uploads
+logs
