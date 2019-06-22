@@ -1,26 +1,23 @@
 
-const Users = require('../models/user.js');
+const User = require('../models/user.js');
+const Question = require('../models/question.js');
 const {
   createToken
 } = require('../../libs/token');
-class User {
+class UserCtrl {
   /**
    * @apiGroup User
    * @api {POST} /user/signUp 注册用户
    * @apiDescription 注册用户
    * @apiParam {String} username  用户名
    * @apiParam {String} password  密码
-   * @apiParam {Number} [age=18] 年龄
+   * @apiParam {Number} [age] 年龄
    * @apiVersion 1.0.0
-   * @apiSuccess {Object} username 用户名
    * @apiSuccessExample {json} Success-Response:
    * {
    *   "code": 0,
    *   "data": {
-   *      "_id": "5d08b9fb05164c2a7b858abc",
-   *      "username": "tom",
-   *      "createdAt": "2019-06-18T10:16:27.590Z",
-   *      "updatedAt": "2019-06-18T10:16:27.590Z"
+   *      "msg": "tom注册成功"
    *    }
    * }
    */
@@ -34,20 +31,21 @@ class User {
       }
     });
     const username = ctx.request.body.username;
-    const password = Users.generatePwd(ctx.request.body.password);
-    let user = await Users.findOne({
+    const password = User.generatePwd(ctx.request.body.password);
+    let user = await User.findOne({
       username
     });
     if (!user) {
       let obj = Object.assign(ctx.request.body, {
         password
       });
-      user = (await Users.create(obj)).toJSON();
-      delete user.password;
+      user = await User.create(obj);
     } else {
       throw new Error('用户已经被注册过');
     }
-    ctx.success(user);
+    ctx.success({
+      msg: `${username}注册成功`
+    });
   }
 
   /**
@@ -59,11 +57,12 @@ class User {
    * @apiVersion 1.0.0
    * @apiSuccess {Object} token token
    * @apiSuccessExample {json} Success-Response:
-   * {
+   *{
    *   "code": 0,
    *   "data": {
-   *      token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZDA4YjlmYjA1MTY0YzJhN2I4NThhYmMiLCJpYXQiOjE1NjA4NTMxMTMsImV4cCI6MTU2MDkzOTUxM30.rMqivtXdd1ZM3TOQrwoy-E6uyUP5TBN2MsSD7WS46BI"
-   *    }
+   *       "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1ZDA5OTFjZTE1M2IzNTU1YWE2MWI1MDMiLCJpYXQiOjE1NjEwODAyNzIsImV4cCI6MTU2MTE2NjY3Mn0.Uln-TF30Il_gUiy0lT-DVEV4crrBNmHTBJB4Wh2qttA",
+   *       "userId": "5d0991ce153b3555aa61b503"
+   *   }
    * }
    */
   async signIn (ctx) {
@@ -73,14 +72,14 @@ class User {
     });
     let password = ctx.request.body.password;
     let username = ctx.request.body.username;
-    let user = await Users.findOne({
+    let user = await User.findOne({
       username
-    });
+    }).select('+password');
     if (user) {
-      let isExist = Users.verifyPwd(password, user.password);
+      let isExist = User.verifyPwd(password, user.password);
       if (isExist) {
         let token = await createToken(user._id);
-        ctx.success({ token });
+        ctx.success({ token, userId: user._id });
       }
     } else {
       throw new Error(`当前用户:${username} 不存在`);
@@ -91,28 +90,30 @@ class User {
    * @apiGroup User
    * @api {PUT} /user/update/:id  修改用户信息
    * @apiHeader {String} Authorization 用户的token
-   * @apiParam  {String} id 用户唯一标识
    * @apiDescription 通过用户的唯一标识来修改用户信息
    * @apiParam  {String} [username] 用户名
    * @apiParam  {String} [password] 用户密码
-   * @apiParam  {Number} [age] 年龄
+   * @apiParam  {String} [avatarUrl] 头像
+   * @apiParam  {String} [gender] 性别
+   * @apiParam  {String} [headline] 一句话介绍
+   * @apiParam  {array} [locations] 居住地话题的ObjectId
+   * @apiParam  {array} [profession] 职业经历的ObjectId
+   * @apiParam  {array} [educations] 学历的ObjectId
+   * @apiParam  {array} [description] 描述
    * {
    *    "Authorization": "Bearer  token"
    * }
    * @apiVersion 1.0.0
-   * @apiSuccess {Object} token token
    * @apiSuccessExample {json} Success-Response:
    *{
    *   "code": 0,
    *   "data": {
-   *       "id": "",
-   *       "username": "jack"
-   *   }
+   *      "msg":"update successful"
+   *    }
    *}
    */
   async update (ctx) {
     ctx.verifyParams({
-      id: 'string',
       username: {
         type: 'string',
         required: false
@@ -121,31 +122,324 @@ class User {
         type: 'string',
         required: false
       },
-      age: {
-        type: 'number',
+      avatarUrl: {
+        type: 'string',
+        required: false
+      },
+      gender: {
+        type: 'string',
+        required: false
+      },
+      headline: {
+        type: 'string',
+        required: false
+      },
+      locations: {
+        type: 'array',
+        itemType: 'string',
+        required: false
+      },
+      business: {
+        type: 'string',
+        required: false
+      },
+      profession: {
+        type: 'array',
+        itemType: 'object',
+        required: false
+      },
+      educations: {
+        type: 'array',
+        itemType: 'object',
+        required: false
+      },
+      description: {
+        type: 'string',
         required: false
       }
     });
 
     let obj = ctx.request.body;
-    obj.password = Users.generatePwd(obj.password);
-    await Users.findOneAndUpdate({
-      _id: ctx.params.id
+    if (obj.password) {
+      obj.password = User.generatePwd(obj.password);
+    }
+    await User.findOneAndUpdate({
+      _id: ctx.state.user.userId
     }, {
       $set: obj
     }, {
       new: true
     });
-    delete obj.password;
-    ctx.success(obj);
+    ctx.success({ msg: `update successful` });
   }
-  async checkIsOwner (ctx, next) {
-    if (ctx.state.user.userId === ctx.params.id) {
+  /**
+   * @apiGroup User
+   * @api {GET} /user/list  获取用户列表
+   * @apiHeader {String} Authorization 用户的token
+   * @apiDescription 获取用户列表
+   * @apiParam  {String} [fileds] 需要查询的字段
+   * @apiParam  {String} [pageNum=1] 当前的页码,默认第一页
+   * @apiParam  {String} [pageSize=10] 每页显示的数量
+   * {
+   *    "Authorization": "Bearer  token"
+   * }
+   * @apiVersion 1.0.0
+   * @apiSuccessExample {json} Success-Response:
+   *{
+   *   "code": 0,
+   *   "data": [
+   *       {
+   *           "gender": "male",
+   *           "_id": "5d0c330f7f8b17e3e49f871c",
+   *           "username": "jack",
+   *           "educations": [],
+   *           "createdAt": "2019-06-21T01:29:51.590Z",
+   *           "updatedAt": "2019-06-21T01:29:51.590Z"
+   *       },
+   *       {
+   *           "gender": "male",
+   *           "_id": "5d0c331b7f8b17e3e49f871d",
+   *           "username": "lily",
+   *           "educations": [],
+   *           "createdAt": "2019-06-21T01:30:03.044Z",
+   *           "updatedAt": "2019-06-21T01:30:03.044Z"
+   *       }
+   *   ]
+   *}
+   */
+  async list (ctx) {
+    let { fileds = '', pageNum = 1, pageSize = 10 } = ctx.query;
+    pageNum = Math.max(+pageNum, 1) - 1;
+    pageSize = Math.max(+pageSize, 1);
+    let selectFields = fileds.split(';').filter(item => item).map(item => ' +' + item).join('');
+    let userList = await User.find().skip(pageNum * pageSize).limit(pageSize).select(selectFields);
+    ctx.success(userList);
+  }
+  /**
+   * @apiGroup User
+   * @api {GET} /user/:id  通过用户的Id获取用户信息
+   * @apiDescription 通过用户的唯一标识来修改用户信息
+   * @apiParam  {String} id 需要查询的字段
+   * @apiParam  {String} [fileds] 需要查询的字段
+   * @apiVersion 1.0.0
+   * @apiSuccessExample {json} Success-Response:
+   *{
+   *   "code": 0,
+   *   "data": [
+   *       {
+   *           "gender": "male",
+   *           "_id": "5d0c330f7f8b17e3e49f871c",
+   *           "username": "jack",
+   *           "createdAt": "2019-06-21T01:29:51.590Z",
+   *           "updatedAt": "2019-06-21T01:29:51.590Z"
+   *       }
+   *   ]
+   * }
+   */
+  async findByUserId (ctx) {
+    let { fileds = '' } = ctx.query;
+    let selectFields = fileds.split(';').filter(item => item).map(item => ' +' + item).join('');
+    let populateStr = fileds.split(';').filter(item => item).map(item => {
+      if (item === 'profession') {
+        return 'profession.company profession.position';
+      } else if (item === 'educations') {
+        return 'educations.scholl educations.major';
+      } else {
+        return item;
+      }
+    }).join(' ');
+    let userList = await User.find({ _id: ctx.params.id }).select(selectFields).populate(populateStr);
+    ctx.success(userList);
+  }
+  /**
+   * @apiGroup User
+   * @api {PUT} /user/:id/following  关注别人
+   * @apiHeader {String} Authorization 用户的token
+   * @apiDescription 关注别人
+   * @apiParam  {String} id 关注人的用户id
+   * {
+   *    "Authorization": "Bearer  token"
+   * }
+   * @apiVersion 1.0.0
+   * @apiSuccessExample {json} Success-Response:
+   * {
+   *   "code": 0,
+   *   "data": {
+   *       "msg": "关注成功"
+   *   }
+   * }
+   */
+  async following (ctx) {
+    let user = await User.findOne({ _id: ctx.state.user.userId }).select('+following');
+    let isExist = user.following.map(item => item.toString()).includes(ctx.params.id);
+    if (!isExist) {
+      user.following.push(ctx.params.id);
+      await user.save();
+    }
+    ctx.success({ msg: '关注成功' });
+  }
+  /**
+   * @apiGroup User
+   * @api {GET} /user/:id/followLists  获取关注的列表
+   * @apiDescription 获取关注的列表
+   * @apiParam  {String} id 查询哪个人的userId
+   * @apiVersion 1.0.0
+   * @apiSuccessExample {json} Success-Response:
+   * {
+   *    "code": 0,
+   *    "data": {
+   *        "gender": "male",
+   *        "following": [
+   *            {
+   *                "gender": "male",
+   *                "_id": "5d0ca338643b65687f36a2d9",
+   *                "username": "admin",
+   *                "createdAt": "2019-06-21T09:28:24.967Z",
+   *                "updatedAt": "2019-06-21T09:28:24.967Z"
+   *            }
+   *        ],
+   *        "_id": "5d0ca335643b65687f36a2d8",
+   *        "username": "yijie",
+   *        "createdAt": "2019-06-21T09:28:21.049Z",
+   *        "updatedAt": "2019-06-21T09:28:41.747Z"
+   *    }
+   *  }
+   */
+  async followLists (ctx) {
+    let lists = await User.find({ following: ctx.params.id });
+    ctx.success(lists);
+  }
+  /**
+   * @apiGroup User
+   * @api {DELETE} /user/:id/unfllowing  取消关注别人
+   * @apiHeader {String} Authorization 用户的token
+   * @apiDescription 取消关注别人
+   * @apiParam  {String} id 关注人的用户id
+   * {
+   *    "Authorization": "Bearer  token"
+   * }
+   * @apiVersion 1.0.0
+   * @apiSuccessExample {json} Success-Response:
+   *   {
+   *   "code": 0,
+   *   "data": {
+   *       "msg": "取消关注成功"
+   *   }
+   * }
+   */
+  async unfollow (ctx) {
+    let user = await User.findById(ctx.state.user.userId).select('+following');
+    let index = user.following.map(item => item.toString()).indexOf(ctx.params.id);
+    if (index > -1) {
+      user.following.splice(index, 1);
+      await user.save();
+    }
+    ctx.success({
+      msg: '取消关注成功'
+    });
+  }
+  /**
+   * @apiGroup User
+   * @api {PUT} /user/:id/followTopics  关注话题
+   * @apiHeader {String} Authorization 用户的token
+   * @apiDescription 关注话题
+   * @apiParam  {String} id 话题的id
+   * {
+   *    "Authorization": "Bearer  token"
+   * }
+   * @apiVersion 1.0.0
+   * @apiSuccessExample {json} Success-Response:
+   * {
+   *   "code": 0,
+   *   "data": {
+   *       "msg": "关注成功"
+   *   }
+   * }
+   */
+  async followTopics (ctx) {
+    let user = await User.findById(ctx.state.user.userId).select('+followTopics');
+    let index = user.followTopics.map(item => item.toString()).indexOf(ctx.params.id);
+    if (index === -1) {
+      user.followTopics.push(ctx.params.id);
+      await user.save();
+    }
+    ctx.success({
+      msg: '关注成功'
+    });
+  }
+  /**
+   * @apiGroup User
+   * @api {DELETE} /user/:id/unfllowTopics  取消关注话题
+   * @apiHeader {String} Authorization 用户的token
+   * @apiDescription 取消关注话题
+   * @apiParam  {String} id 话题id
+   * {
+   *    "Authorization": "Bearer  token"
+   * }
+   * @apiVersion 1.0.0
+   * @apiSuccessExample {json} Success-Response:
+   *   {
+   *   "code": 0,
+   *   "data": {
+   *       "msg": "取消关注成功"
+   *   }
+   * }
+   */
+  async unfollowTopics (ctx) {
+    let user = await User.findById(ctx.state.user.userId).select('+followTopics');
+    let index = user.followTopics.map(item => item.toString()).indexOf(ctx.params.id);
+    if (index > -1) {
+      user.followTopics.splice(index, 1);
+      await user.save();
+    }
+    ctx.success({
+      msg: '取消关注成功'
+    });
+  }
+  /**
+   * @apiGroup User
+   * @api {GET} /user/:id/myQuestionLists  获取我提的问题列表
+   * @apiHeader {String} Authorization 用户的token
+   * @apiDescription 获取我提的问题列表
+   * @apiParam  {String} id 话题id
+   * {
+   *    "Authorization": "Bearer  token"
+   * }
+   * @apiVersion 1.0.0
+   * @apiSuccessExample {json} Success-Response:
+   *  {
+   *    "code": 0,
+   *    "data": [
+   *        {
+   *            "topicLists": [
+   *                {
+   *                    "_id": "5d0cc82397f2e00ffb8d2ba0",
+   *                    "name": "互联网",
+   *                    "createdAt": "2019-06-21T12:05:55.942Z",
+   *                    "updatedAt": "2019-06-21T12:05:55.942Z"
+   *                }
+   *            ],
+   *            "_id": "5d0da7124de1325a9f65ae23",
+   *            "title": "koa 怎么学",
+   *            "description": "koa是nodejs的一个web框架",
+   *            "createdAt": "2019-06-22T03:57:06.519Z",
+   *            "updatedAt": "2019-06-22T05:27:47.318Z"
+   *        }
+   *    ]
+   * }
+   */
+  async getMyQuestionLists (ctx) {
+    let qLists = await Question.find({ questioner: ctx.state.user.userId }).populate('topicLists');
+    ctx.success(qLists);
+  }
+  async checkUserIsExist (ctx, next) {
+    let u = await User.findById(ctx.params.id);
+    if (u) {
       await next();
     } else {
-      ctx.throw(403, '没有权限');
+      ctx.success({ msg: `用户不存在` });
     }
   }
 }
 
-module.exports = new User();
+module.exports = new UserCtrl();
