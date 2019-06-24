@@ -1,4 +1,5 @@
 const Anwser = require('../models/anwser.js');
+const User = require('../models/user.js');
 
 class AnwserCtrl {
   /**
@@ -170,6 +171,62 @@ class AnwserCtrl {
   async getListByQuestionId (ctx) {
     let aLists = await Anwser.find({ questionId: ctx.query.questionId });
     ctx.success(aLists);
+  }
+  /**
+   * @apiGroup Anwser
+   * @api {GET} /anwser/:id/like 通过答案id获取点赞该答案的人员列表
+   * @apiDescription 通过答案id获取点赞该答案的人员列表
+   * @apiHeader {String} Authorization 用户的token
+   * {
+   *    "Authorization": "Bearer  token"
+   * }
+   * @apiParam {String} questionId  答案id
+   * @apiVersion 1.0.0
+   * @apiSuccessExample {json} Success-Response:
+   * {
+   *   "code": 0,
+   *   "data": [
+   *       {
+   *           "gender": "male",
+   *           "_id": "5d0ca32e643b65687f36a2d6",
+   *           "username": "jack",
+   *           "createdAt": "2019-06-21T09:28:14.600Z",
+   *           "updatedAt": "2019-06-24T06:39:53.592Z"
+   *       }
+   *   ]
+   * }
+   */
+  async getLikeCollections (ctx) {
+    let user = await User.find({ likeCollections: ctx.params.id });
+    ctx.success(user);
+  }
+  /**
+   * @apiGroup Anwser
+   * @api {GET} /anwser/:id/dislike 通过答案id获取踩该答案的人员列表
+   * @apiDescription 通过答案id获取踩该答案的人员列表
+   * @apiHeader {String} Authorization 用户的token
+   * {
+   *    "Authorization": "Bearer  token"
+   * }
+   * @apiParam {String} questionId  答案id
+   * @apiVersion 1.0.0
+   * @apiSuccessExample {json} Success-Response:
+   * {
+   *     "code": 0,
+   *     "data": [
+   *         {
+   *             "gender": "male",
+   *             "_id": "5d0ca32e643b65687f36a2d6",
+   *             "username": "jack",
+   *             "createdAt": "2019-06-21T09:28:14.600Z",
+   *             "updatedAt": "2019-06-24T06:43:40.835Z"
+   *         }
+   *     ]
+   * }
+   */
+  async getDisLikeCollectioins (ctx) {
+    let user = await User.find({ disLikeCollections: ctx.params.id });
+    ctx.success(user);
   }
   async checkIdIsQuestion (ctx, next) {
     let isExist = await Anwser.findOne({ questionId: ctx.params.questionId });

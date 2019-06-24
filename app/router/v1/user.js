@@ -11,7 +11,11 @@ const {
   unfollow,
   followTopics,
   unfollowTopics,
-  getMyQuestionLists
+  getMyQuestionLists,
+  likeAnwser,
+  cancelLikeAnwser,
+  dislikeAnwser,
+  cancelDislikeAnwser
 } = require('../../control/user');
 
 const {
@@ -34,4 +38,8 @@ router.delete('/:id/unfollowing', authUser, checkUserIsExist, unfollow);
 router.put('/:id/followTopics', authUser, checkTopicIsExist, followTopics);
 router.delete('/:id/unfollowTopics', authUser, checkTopicIsExist, unfollowTopics);
 router.get('/:id/myQuestionLists', authUser, getMyQuestionLists);
+router.put('/:anwserId/like', authUser, likeAnwser, cancelDislikeAnwser);
+router.put('/:anwserId/cancelLikeAnwser', authUser, cancelLikeAnwser);
+router.put('/:anwserId/dislike', authUser, dislikeAnwser, cancelLikeAnwser);
+router.put('/:anwserId/cancelDislikeAnwser', authUser, cancelDislikeAnwser);
 module.exports = router;

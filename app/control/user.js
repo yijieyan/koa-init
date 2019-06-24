@@ -432,6 +432,96 @@ class UserCtrl {
     let qLists = await Question.find({ questioner: ctx.state.user.userId }).populate('topicLists');
     ctx.success(qLists);
   }
+  /**
+   * @apiGroup User
+   * @api {PUT} /user/:anwserId/like 点赞
+   * @apiHeader {String} Authorization 用户的token
+   * @apiDescription 点赞
+   * @apiParam  {String} anwserId 答案id
+   * {
+   *    "Authorization": "Bearer  token"
+   * }
+   * @apiVersion 1.0.0
+   * @apiSuccessExample {json} Success-Response:
+   *  http status 204
+   */
+  async likeAnwser (ctx, next) {
+    let user = await User.findById(ctx.state.user.userId).select('+likeCollections');
+    let index = user.likeCollections.map(item => item.toString()).indexOf(ctx.params.anwserId);
+    if (index === -1) {
+      user.likeCollections.push(ctx.params.anwserId);
+      await user.save();
+    }
+    ctx.status = 204;
+    await next();
+  }
+  /**
+   * @apiGroup User
+   * @api {PUT} /user/:anwserId/cancelLikeAnwser 取消点赞
+   * @apiHeader {String} Authorization 用户的token
+   * @apiDescription 取消点赞
+   * @apiParam  {String} anwserId 答案id
+   * {
+   *    "Authorization": "Bearer  token"
+   * }
+   * @apiVersion 1.0.0
+   * @apiSuccessExample {json} Success-Response:
+   *    http status 204
+   */
+  async cancelLikeAnwser (ctx) {
+    let user = await User.findById(ctx.state.user.userId).select('+likeCollections');
+    let index = user.likeCollections.map(item => item.toString()).indexOf(ctx.params.anwserId);
+    if (index > -1) {
+      user.likeCollections.splice(index, 1);
+      await user.save();
+    }
+    ctx.status = 204;
+  }
+  /**
+   * @apiGroup User
+   * @api {PUT} /user/:anwserId/dislike 踩
+   * @apiHeader {String} Authorization 用户的token
+   * @apiDescription 踩
+   * @apiParam  {String} anwserId 答案id
+   * {
+   *    "Authorization": "Bearer  token"
+   * }
+   * @apiVersion 1.0.0
+   * @apiSuccessExample {json} Success-Response:
+   *    http status 204
+   */
+  async dislikeAnwser (ctx, next) {
+    let user = await User.findById(ctx.state.user.userId).select('+disLikeCollections');
+    let index = user.disLikeCollections.map(item => item.toString()).indexOf(ctx.params.anwserId);
+    if (index === -1) {
+      user.disLikeCollections.push(ctx.params.anwserId);
+      await user.save();
+    }
+    ctx.status = 204;
+    await next();
+  }
+  /**
+   * @apiGroup User
+   * @api {PUT} /user/:anwserId/cancelDislikeAnwser 取消踩
+   * @apiHeader {String} Authorization 用户的token
+   * @apiDescription 取消踩
+   * @apiParam  {String} anwserId 答案id
+   * {
+   *    "Authorization": "Bearer  token"
+   * }
+   * @apiVersion 1.0.0
+   * @apiSuccessExample {json} Success-Response:
+   *    http status 204
+   */
+  async cancelDislikeAnwser (ctx) {
+    let user = await User.findById(ctx.state.user.userId).select('+disLikeCollections');
+    let index = user.disLikeCollections.map(item => item.toString()).indexOf(ctx.params.anwserId);
+    if (index > -1) {
+      user.disLikeCollections.splice(index, 1);
+      await user.save();
+    }
+    ctx.status = 204;
+  }
   async checkUserIsExist (ctx, next) {
     let u = await User.findById(ctx.params.id);
     if (u) {

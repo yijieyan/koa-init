@@ -17,7 +17,9 @@ const UserSchema = new Schema({
   educations: { type: [{ scholl: { type: Schema.Types.ObjectId, ref: 'topic' }, major: { type: Schema.Types.ObjectId, ref: 'topic' }, level: { type: Number, enum: [1, 2, 3, 4, 5] }, entry_year: Number, graduate_year: Number, _id: 0 }], select: false }, // 1:高中及以下 2:大专 3:本科 4:硕士 5:博士及以上
   description: { type: String, select: false }, // 描述
   following: { type: [{ type: Schema.Types.ObjectId, ref: 'user' }], select: false }, // 关注的列表
-  followTopics: { type: [{ type: Schema.Types.ObjectId, ref: 'topic' }], select: false } // 关注的话题列表
+  followTopics: { type: [{ type: Schema.Types.ObjectId, ref: 'topic' }], select: false }, // 关注的话题列表
+  likeCollections: { type: [{ type: Schema.Types.ObjectId, ref: 'anwser' }], select: false }, // 喜欢的人
+  disLikeCollections: { type: [{ type: Schema.Types.ObjectId, ref: 'anwser' }], select: false }
 }, { versionKey: false, timestamps: true });
 
 /**
